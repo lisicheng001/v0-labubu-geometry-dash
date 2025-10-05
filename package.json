@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "echo 'no build script'"
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "next lint",
+    "start": "next start"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -20,7 +23,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8.5",
-    "tailwindcss": "4.1.14",
+    "tailwindcss": "^4.1.9",
     "typescript": "^5"
   }
 }
