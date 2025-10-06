@@ -1,100 +1,32 @@
 "use client"
 
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 export default function Home() {
+  const [activeModal, setActiveModal] = useState<string | null>(null)
+
   useEffect(() => {
-    // Main game fullscreen functionality
-    const toggleFullscreen = (gameId: string) => {
-      const gameContainer = document.getElementById(gameId)
-      if (!gameContainer) return
-
-      const button = gameContainer.querySelector(".fullscreen-btn")
-      const buttonText = button?.querySelector("span")
-
-      if (!gameContainer.classList.contains("fullscreen")) {
-        gameContainer.classList.add("fullscreen")
-        if (buttonText) buttonText.textContent = "Exit Fullscreen"
-        document.body.style.overflow = "hidden"
-
-        if (gameContainer.requestFullscreen) {
-          gameContainer.requestFullscreen().catch((err) => {
-            console.log("Fullscreen request failed:", err)
-          })
-        }
-      } else {
-        exitFullscreen(gameContainer, buttonText)
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && activeModal) {
+        setActiveModal(null)
       }
     }
+    document.addEventListener("keydown", handleEscape)
+    return () => document.removeEventListener("keydown", handleEscape)
+  }, [activeModal])
 
-    const exitFullscreen = (gameContainer: HTMLElement, buttonText: Element | null | undefined) => {
-      gameContainer.classList.remove("fullscreen")
-      if (buttonText) buttonText.textContent = "Fullscreen"
-      document.body.style.overflow = ""
+  const toggleFullscreen = (gameId: string) => {
+    const gameContainer = document.getElementById(gameId)
+    if (!gameContainer) return
 
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch((err) => {})
-      }
-    }
-
-    const handleFullscreenChange = () => {
-      const isFullscreen = document.fullscreenElement
-
-      if (!isFullscreen) {
-        const fullscreenGames = document.querySelectorAll(".fullscreen")
-        fullscreenGames.forEach((game) => {
-          const buttonText = game.querySelector(".fullscreen-btn span")
-          game.classList.remove("fullscreen")
-          if (buttonText) buttonText.textContent = "Fullscreen"
-          document.body.style.overflow = ""
-        })
-      }
-    }
-
-    const openGame = (gameId: string) => {
-      const modalId = gameId === "game1" ? "modal1" : "modal2"
-      const modal = document.getElementById(modalId)
-      if (modal) {
-        modal.classList.add("active")
-        document.body.style.overflow = "hidden"
-      }
-    }
-
-    const closeGame = (modalId: string) => {
-      const modal = document.getElementById(modalId)
-      if (modal) {
-        modal.classList.remove("active")
-        document.body.style.overflow = ""
-      }
-    }
-
-    // Attach event listeners
-    ;(window as any).toggleFullscreen = toggleFullscreen
-    ;(window as any).openGame = openGame
-    ;(window as any).closeGame = closeGame
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange)
-
-    document.querySelectorAll(".game-modal").forEach((modal) => {
-      modal.addEventListener("click", function (e) {
-        if (e.target === this) {
-          closeGame((this as HTMLElement).id)
-        }
+    if (!document.fullscreenElement) {
+      gameContainer.requestFullscreen().catch((err) => {
+        console.log("Fullscreen request failed:", err)
       })
-    })
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        document.querySelectorAll(".game-modal.active").forEach((modal) => {
-          closeGame((modal as HTMLElement).id)
-        })
-      }
-    })
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    } else {
+      document.exitFullscreen()
     }
-  }, [])
+  }
 
   return (
     <>
@@ -270,27 +202,6 @@ export default function Home() {
           width: 20px;
           height: 20px;
           fill: white;
-        }
-
-        .game-container.fullscreen {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          max-width: 100vw;
-          margin: 0;
-          border-radius: 0;
-          z-index: 9999;
-          border: none;
-        }
-
-        .game-container.fullscreen iframe {
-          height: 100vh;
-        }
-
-        .game-container.fullscreen .fullscreen-btn {
-          background: linear-gradient(135deg, #c71585, #ff1493);
         }
 
         .description {
@@ -645,15 +556,15 @@ export default function Home() {
         <section className="game-section">
           <h2>Play Labubu Geometry Dash Online</h2>
           <p className="description">
-            Experience the ultimate rhythm-based platformer featuring everyone&apos;s favorite character, Labubu!
-            Navigate through challenging geometric obstacles, time your jumps perfectly, and enjoy hours of addictive
-            gameplay in this free online game.
+            Experience the ultimate rhythm-based platformer featuring everyone's favorite character, Labubu! Navigate
+            through challenging geometric obstacles, time your jumps perfectly, and enjoy hours of addictive gameplay in
+            this free online game.
           </p>
 
           <div className="game-container" id="mainGame">
             <button
               className="fullscreen-btn"
-              onClick={() => (window as any).toggleFullscreen("mainGame")}
+              onClick={() => toggleFullscreen("mainGame")}
               aria-label="Toggle Fullscreen"
             >
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -665,6 +576,7 @@ export default function Home() {
               src="https://html5.gamemonetize.co/qge3r3syyxhvzxjf6cb5oe0rq9bk9uxh/"
               width="960"
               height="600"
+              frameBorder="0"
               scrolling="no"
               allow="fullscreen; autoplay; gamepad"
               allowFullScreen
@@ -683,7 +595,7 @@ export default function Home() {
             </p>
             <p>
               The game features stunning visual effects, synchronized music that enhances the gameplay experience, and a
-              progression system that keeps you coming back for more. Whether you&apos;re a casual player or a hardcore
+              progression system that keeps you coming back for more. Whether you're a casual player or a hardcore
               gamer, Labubu Geometry Dash offers the perfect balance of challenge and fun.
             </p>
 
@@ -727,7 +639,7 @@ export default function Home() {
             </p>
             <p>
               <strong>Tips:</strong> Practice makes perfect! Learn the patterns of each level, listen to the music for
-              timing cues, and don&apos;t give up - even the toughest levels can be conquered with patience and skill.
+              timing cues, and don't give up - even the toughest levels can be conquered with patience and skill.
             </p>
           </div>
         </section>
@@ -735,8 +647,7 @@ export default function Home() {
         <section className="game-section more-games">
           <h2>More Exciting Games to Play</h2>
           <p className="description">
-            Can&apos;t get enough of Labubu? Check out these other amazing games that will keep you entertained for
-            hours!
+            Can't get enough of Labubu? Check out these other amazing games that will keep you entertained for hours!
           </p>
 
           <div className="games-grid">
@@ -745,7 +656,7 @@ export default function Home() {
               <p>Join Labubu on an epic adventure through magical worlds filled with puzzles and treasures!</p>
               <button
                 className="play-btn"
-                onClick={() => (window as any).openGame("game1")}
+                onClick={() => setActiveModal("game1")}
                 aria-label="Play Labubu Adventure Quest"
               >
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -760,7 +671,7 @@ export default function Home() {
               <p>Race through exciting tracks with Labubu in this fast-paced racing adventure!</p>
               <button
                 className="play-btn"
-                onClick={() => (window as any).openGame("game2")}
+                onClick={() => setActiveModal("game2")}
                 aria-label="Play Labubu Racing Challenge"
               >
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -778,13 +689,12 @@ export default function Home() {
         </footer>
       </div>
 
-      <div className="game-modal" id="modal1">
+      <div
+        className={`game-modal ${activeModal === "game1" ? "active" : ""}`}
+        onClick={(e) => e.target === e.currentTarget && setActiveModal(null)}
+      >
         <div className="game-modal-content">
-          <button
-            className="close-modal-btn"
-            onClick={() => (window as any).closeGame("modal1")}
-            aria-label="Close Game"
-          >
+          <button className="close-modal-btn" onClick={() => setActiveModal(null)} aria-label="Close Game">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
             </svg>
@@ -794,6 +704,7 @@ export default function Home() {
             src="https://html5.gamemonetize.co/iri6qbxw5iyl4teu4u6tqwh9lgtmeiju/"
             width="960"
             height="540"
+            frameBorder="0"
             scrolling="no"
             allow="fullscreen; autoplay; gamepad"
             allowFullScreen
@@ -803,13 +714,12 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="game-modal" id="modal2">
+      <div
+        className={`game-modal ${activeModal === "game2" ? "active" : ""}`}
+        onClick={(e) => e.target === e.currentTarget && setActiveModal(null)}
+      >
         <div className="game-modal-content">
-          <button
-            className="close-modal-btn"
-            onClick={() => (window as any).closeGame("modal2")}
-            aria-label="Close Game"
-          >
+          <button className="close-modal-btn" onClick={() => setActiveModal(null)} aria-label="Close Game">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
             </svg>
@@ -819,6 +729,7 @@ export default function Home() {
             src="https://html5.gamemonetize.co/klzoqsmeofr7ylbhwhbwy9znj3n4ucsw/"
             width="960"
             height="540"
+            frameBorder="0"
             scrolling="no"
             allow="fullscreen; autoplay; gamepad"
             allowFullScreen
